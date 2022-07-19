@@ -1,19 +1,87 @@
-import { Duration, Stack, StackProps } from 'aws-cdk-lib';
-import * as sns from 'aws-cdk-lib/aws-sns';
-import * as subs from 'aws-cdk-lib/aws-sns-subscriptions';
-import * as sqs from 'aws-cdk-lib/aws-sqs';
-import { Construct } from 'constructs';
+import * as cdk from "aws-cdk-lib";
+import * as iam from "aws-cdk-lib/aws-iam";
+import * as glue from 'aws-cdk-lib/aws-glue';
+import { Construct } from "constructs";
 
-export class DataEduGlueEeStack extends Stack {
-  constructor(scope: Construct, id: string, props?: StackProps) {
+export class DataEduGlueEeStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const queue = new sqs.Queue(this, 'DataEduGlueEeQueue', {
-      visibilityTimeout: Duration.seconds(300)
+    // Parameter: Raw bucket name
+    const RawBucketName = new cdk.CfnParameter(this, "RawBucketName", {
+      type: "String",
+      default: "dataedu-raw-123456abcdefghijklmnopqrstuvwxyz",
+      description: "Raw bucket name",
     });
 
-    const topic = new sns.Topic(this, 'DataEduGlueEeTopic');
+    // IAM Role for Fetch Demo Data Lambda Execution Role
+    const glueCrawlerRole = new iam.Role(this, "dataeduGlueCrawlerRole", {
+      assumedBy: new iam.ServicePrincipal("glue.amazonaws.com"),
+      roleName: "dataedu-glue-crawler-role",
+    });
 
-    topic.addSubscription(new subs.SqsSubscription(queue));
+    // Add AmazonS3FullAccess in order to acccess raw data bucket
+    glueCrawlerRole.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSGlueServiceRole')
+    );
+    
+    // Add AmazonS3FullAccess in order to acccess raw data bucket
+    glueCrawlerRole.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonS3FullAccess')
+    );
+
+    // sisdemo_crawler: Crawls sisdemo folder; creates db_raw_sisdemo tables
+    /*
+    const cfnCrawler = new glue.CfnCrawler(this, 'dataeduSisdemoCrawler', {
+      role: 'role',
+      targets: {
+        catalogTargets: [{
+          databaseName: 'databaseName',
+          tables: ['tables'],
+        }],
+        dynamoDbTargets: [{
+          path: 'path',
+        }],
+        jdbcTargets: [{
+          connectionName: 'connectionName',
+          exclusions: ['exclusions'],
+          path: 'path',
+        }],
+        mongoDbTargets: [{
+          connectionName: 'connectionName',
+          path: 'path',
+        }],
+        s3Targets: [{
+          connectionName: 'connectionName',
+          dlqEventQueueArn: 'dlqEventQueueArn',
+          eventQueueArn: 'eventQueueArn',
+          exclusions: ['exclusions'],
+          path: 'path',
+          sampleSize: 123,
+        }],
+      },
+    
+      // the properties below are optional
+      classifiers: ['classifiers'],
+      configuration: 'configuration',
+      crawlerSecurityConfiguration: 'crawlerSecurityConfiguration',
+      databaseName: 'databaseName',
+      description: 'description',
+      name: 'name',
+      recrawlPolicy: {
+        recrawlBehavior: 'recrawlBehavior',
+      },
+      schedule: {
+        scheduleExpression: 'scheduleExpression',
+      },
+      schemaChangePolicy: {
+        deleteBehavior: 'deleteBehavior',
+        updateBehavior: 'updateBehavior',
+      },
+      tablePrefix: 'tablePrefix',
+      tags: tags,
+    });
+    */
   }
 }
+
