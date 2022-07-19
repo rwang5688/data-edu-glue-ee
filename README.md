@@ -1,4 +1,4 @@
-# Welcome to your CDK TypeScript project
+# data-edu-glue-ee
 
 You should explore the contents of this project. It demonstrates a CDK app with an instance of a stack (`DataEduGlueEeStack`)
 which contains an Amazon SQS queue that is subscribed to an Amazon SNS topic.
