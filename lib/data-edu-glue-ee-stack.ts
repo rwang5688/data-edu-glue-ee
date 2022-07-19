@@ -8,16 +8,17 @@ export class DataEduGlueEeStack extends cdk.Stack {
     super(scope, id, props);
 
     // Parameter: Raw bucket name
-    const RawBucketName = new cdk.CfnParameter(this, "RawBucketName", {
-      type: "String",
-      default: "dataedu-raw-123456abcdefghijklmnopqrstuvwxyz",
-      description: "Raw bucket name",
+    const RawBucketName = new cdk.CfnParameter(this, 'RawBucketName', {
+      type: 'String',
+      default: 'dataedu-raw-123456abcdefghijklmnopqrstuvwxyz',
+      description: 'Raw bucket name.',
     });
+    const rawBucketPath = 's3://'+RawBucketName.valueAsString;
 
     // IAM Role for Fetch Demo Data Lambda Execution Role
-    const glueCrawlerRole = new iam.Role(this, "dataeduGlueCrawlerRole", {
-      assumedBy: new iam.ServicePrincipal("glue.amazonaws.com"),
-      roleName: "dataedu-glue-crawler-role",
+    const glueCrawlerRole = new iam.Role(this, 'dataeduGlueCrawlerRole', {
+      assumedBy: new iam.ServicePrincipal('glue.amazonaws.com'),
+      roleName: 'dataedu-glue-crawler-role-name',
     });
 
     // Add AmazonS3FullAccess in order to acccess raw data bucket
@@ -31,57 +32,34 @@ export class DataEduGlueEeStack extends cdk.Stack {
     );
 
     // sisdemo_crawler: Crawls sisdemo folder; creates db_raw_sisdemo tables
-    /*
-    const cfnCrawler = new glue.CfnCrawler(this, 'dataeduSisdemoCrawler', {
-      role: 'role',
+    const sisdemoCrawler = new glue.CfnCrawler(this, 'dataeduSisdemoCrawler', {
+      role: glueCrawlerRole.roleArn,
       targets: {
-        catalogTargets: [{
-          databaseName: 'databaseName',
-          tables: ['tables'],
-        }],
-        dynamoDbTargets: [{
-          path: 'path',
-        }],
-        jdbcTargets: [{
-          connectionName: 'connectionName',
-          exclusions: ['exclusions'],
-          path: 'path',
-        }],
-        mongoDbTargets: [{
-          connectionName: 'connectionName',
-          path: 'path',
-        }],
         s3Targets: [{
-          connectionName: 'connectionName',
-          dlqEventQueueArn: 'dlqEventQueueArn',
-          eventQueueArn: 'eventQueueArn',
-          exclusions: ['exclusions'],
-          path: 'path',
-          sampleSize: 123,
+          path: rawBucketPath+'/sisdemo',
         }],
       },
     
       // the properties below are optional
-      classifiers: ['classifiers'],
-      configuration: 'configuration',
-      crawlerSecurityConfiguration: 'crawlerSecurityConfiguration',
-      databaseName: 'databaseName',
-      description: 'description',
-      name: 'name',
-      recrawlPolicy: {
-        recrawlBehavior: 'recrawlBehavior',
-      },
-      schedule: {
-        scheduleExpression: 'scheduleExpression',
-      },
-      schemaChangePolicy: {
-        deleteBehavior: 'deleteBehavior',
-        updateBehavior: 'updateBehavior',
-      },
-      tablePrefix: 'tablePrefix',
-      tags: tags,
+      databaseName: 'db_raw_sisdemo',
+      description: 'SIS demo data crawler.',
+      name: 'dataedu-sisdemo-crawler',
     });
-    */
+
+    // lmsdemo_crawler: Crawls lmsdemo folder; creates db_raw_lmsdemo tables
+    const lmsdemoCrawler = new glue.CfnCrawler(this, 'dataedLmsdemoCrawler', {
+      role: glueCrawlerRole.roleArn,
+      targets: {
+        s3Targets: [{
+          path: rawBucketPath+'/lmsdemo',
+        }],
+      },
+    
+      // the properties below are optional
+      databaseName: 'db_raw_lmsdemo',
+      description: 'LMS demo data crawler.',
+      name: 'dataedu-lmsdemo-crawler',
+    });
   }
 }
 
