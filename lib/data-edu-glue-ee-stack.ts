@@ -13,7 +13,7 @@ export class DataEduGlueEeStack extends cdk.Stack {
       default: 'dataedu-raw-123456abcdefghijklmnopqrstuvwxyz',
       description: 'Raw bucket name.',
     });
-    const rawBucketPath = 's3://'+RawBucketName.valueAsString;
+    const rawBucketPath = 's3://'+RawBucketName.valueAsString+'/';
 
     // IAM Role for Fetch Demo Data Lambda Execution Role
     const glueCrawlerRole = new iam.Role(this, 'dataeduGlueCrawlerRole', {
@@ -36,7 +36,7 @@ export class DataEduGlueEeStack extends cdk.Stack {
       role: glueCrawlerRole.roleArn,
       targets: {
         s3Targets: [{
-          path: rawBucketPath+'/sisdemo',
+          path: rawBucketPath+'sisdb/sisdemo/',
         }],
       },
     
@@ -51,7 +51,7 @@ export class DataEduGlueEeStack extends cdk.Stack {
       role: glueCrawlerRole.roleArn,
       targets: {
         s3Targets: [{
-          path: rawBucketPath+'/lmsdemo',
+          path: rawBucketPath+'lmsapi/',
         }],
       },
     
