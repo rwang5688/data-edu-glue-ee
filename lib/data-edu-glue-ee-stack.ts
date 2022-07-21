@@ -36,7 +36,7 @@ export class DataEduGlueEeStack extends cdk.Stack {
       role: glueCrawlerRole.roleArn,
       targets: {
         s3Targets: [{
-          path: rawBucketPath+'/sisdemo',
+          path: rawBucketPath+'sisdb/sisdemo/',
         }],
       },
     
@@ -51,7 +51,7 @@ export class DataEduGlueEeStack extends cdk.Stack {
       role: glueCrawlerRole.roleArn,
       targets: {
         s3Targets: [{
-          path: rawBucketPath+'/lmsdemo',
+          path: rawBucketPath+'lmsapi/',
         }],
       },
     
